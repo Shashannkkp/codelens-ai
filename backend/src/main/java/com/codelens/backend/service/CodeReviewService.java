@@ -276,6 +276,13 @@ public class CodeReviewService {
                 issues
         );
 
+        // Rule 15: Input validation
+        addInputValidationIssues(
+                lines,
+                language,
+                issues
+        );
+
         int securityScore = 100;
         int qualityScore = 100;
         int performanceScore = 100;
@@ -1359,6 +1366,166 @@ public class CodeReviewService {
                     )
             );
         }
+    }
+
+    // ---------------------------------------------------------
+    // Rule 15
+    // ---------------------------------------------------------
+
+    private void addInputValidationIssues(
+            String[] lines,
+            String language,
+            List<Issue> issues
+    ) {
+
+        if (language == null) {
+            return;
+        }
+
+        if (!language.toLowerCase().contains("java")) {
+            return;
+        }
+
+        Pattern requestParameterPattern =
+                Pattern.compile(
+                        "@(?:RequestParam|PathVariable|RequestBody)\\b"
+                );
+
+        Pattern requestGetParameterPattern =
+                Pattern.compile(
+                        "\\b(?:request|req)\\.getParameter\\s*\\("
+                );
+
+        for (int i = 0;
+             i < lines.length;
+             i++) {
+
+            String line =
+                    lines[i];
+
+            String trimmed =
+                    line.trim();
+
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+
+            if (trimmed.startsWith("//")
+                    || trimmed.startsWith("/*")
+                    || trimmed.startsWith("*")) {
+
+                continue;
+            }
+
+            boolean externalInput =
+                    requestParameterPattern
+                            .matcher(line)
+                            .find()
+                            ||
+                    requestGetParameterPattern
+                            .matcher(line)
+                            .find();
+
+            if (!externalInput) {
+                continue;
+            }
+
+            boolean validationFound =
+                    hasNearbyValidation(
+                            lines,
+                            i
+                    );
+
+            if (validationFound) {
+                continue;
+            }
+
+            String matchedInput =
+                    findInputMatch(
+                            line,
+                            requestParameterPattern,
+                            requestGetParameterPattern
+                    );
+
+            issues.add(
+                    new Issue(
+                            "SECURITY",
+                            "MEDIUM",
+                            "Input validation may be missing",
+                            "External input is being accepted without an obvious validation check nearby.",
+                            "Validate and sanitize external input before processing, storing, or using it.",
+                            i + 1,
+                            trimmed,
+                            matchedInput
+                    )
+            );
+        }
+    }
+
+    private boolean hasNearbyValidation(
+            String[] lines,
+            int inputLine
+    ) {
+
+        int start =
+                Math.max(
+                        0,
+                        inputLine - 3
+                );
+
+        int end =
+                Math.min(
+                        lines.length,
+                        inputLine + 5
+                );
+
+        Pattern validationPattern =
+                Pattern.compile(
+                        "(?i)\\b(if|validate|validated|validation|isBlank|isEmpty|matches|contains|length|size)\\b"
+                );
+
+        for (int i = start;
+             i < end;
+             i++) {
+
+            if (i == inputLine) {
+                continue;
+            }
+
+            if (validationPattern
+                    .matcher(lines[i])
+                    .find()) {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private String findInputMatch(
+            String line,
+            Pattern requestParameterPattern,
+            Pattern requestGetParameterPattern
+    ) {
+
+        Matcher annotationMatcher =
+                requestParameterPattern
+                        .matcher(line);
+
+        if (annotationMatcher.find()) {
+            return annotationMatcher.group();
+        }
+
+        Matcher requestMatcher =
+                requestGetParameterPattern
+                        .matcher(line);
+
+        if (requestMatcher.find()) {
+            return requestMatcher.group();
+        }
+
+        return line.trim();
     }
 
     // ---------------------------------------------------------
