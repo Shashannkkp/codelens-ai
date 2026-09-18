@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 public class CodeReviewService {
 
     private static final int MAX_METHOD_LINES = 30;
+
     private static final int MIN_DUPLICATE_LINE_LENGTH = 10;
 
     public ReviewAnalysis analyze(
@@ -20,44 +21,52 @@ public class CodeReviewService {
             String language
     ) {
 
-        String[] lines = code.split("\\r?\\n");
+        String[] lines =
+                code.split("\\r?\\n", -1);
 
-        List<Issue> issues = new ArrayList<>();
+        List<Issue> issues =
+                new ArrayList<>();
 
-        // -----------------------------------------
-        // Rule 1: Hardcoded Password
-        // -----------------------------------------
+        // Rule 1: Hardcoded password
+        for (int i = 0;
+             i < lines.length;
+             i++) {
 
-        for (int i = 0; i < lines.length; i++) {
+            String line =
+                    lines[i];
 
-            String line = lines[i];
+            String matched =
+                    findHardcodedPassword(line);
 
-            if (findHardcodedPassword(line)) {
+            if (matched != null) {
 
                 issues.add(
                         new Issue(
                                 "SECURITY",
                                 "HIGH",
                                 "Hardcoded password detected",
-                                "A password appears to be directly written in the source code.",
-                                "Move passwords to environment variables or a secure secrets manager.",
+                                "A password is directly written in the source code.",
+                                "Move the password to environment variables or secure application configuration.",
                                 i + 1,
                                 line.trim(),
-                                line.trim()
+                                matched
                         )
                 );
             }
         }
 
-        // -----------------------------------------
-        // Rule 2: Hardcoded Secret / API Key
-        // -----------------------------------------
+        // Rule 2: Hardcoded secret/API key
+        for (int i = 0;
+             i < lines.length;
+             i++) {
 
-        for (int i = 0; i < lines.length; i++) {
+            String line =
+                    lines[i];
 
-            String line = lines[i];
+            String matched =
+                    findHardcodedSecret(line);
 
-            if (findHardcodedSecret(line)) {
+            if (matched != null) {
 
                 issues.add(
                         new Issue(
@@ -65,32 +74,35 @@ public class CodeReviewService {
                                 "HIGH",
                                 "Hardcoded secret detected",
                                 "A secret or API key appears to be stored directly in the source code.",
-                                "Store secrets in environment variables or a secure secrets manager.",
+                                "Move secrets to environment variables or a secure secret-management system.",
                                 i + 1,
                                 line.trim(),
-                                line.trim()
+                                matched
                         )
                 );
             }
         }
 
-        // -----------------------------------------
-        // Rule 3: Debug Output
-        // -----------------------------------------
+        // Rule 3: Debug output
+        for (int i = 0;
+             i < lines.length;
+             i++) {
 
-        for (int i = 0; i < lines.length; i++) {
+            String line =
+                    lines[i];
 
-            String line = lines[i];
-
-            if (findDebugOutput(line, language)) {
+            if (findDebugOutput(
+                    line,
+                    language
+            )) {
 
                 issues.add(
                         new Issue(
                                 "QUALITY",
                                 "LOW",
                                 "Debug output detected",
-                                "Debug or console output should generally not remain in production code.",
-                                "Remove the debug statement or replace it with a proper logging framework.",
+                                "Debug output can remain in production code and make logs noisy.",
+                                "Use a proper logging framework instead of direct console output.",
                                 i + 1,
                                 line.trim(),
                                 line.trim()
@@ -99,212 +111,221 @@ public class CodeReviewService {
             }
         }
 
-        // -----------------------------------------
-        // Rule 4: Empty Catch Block
-        // -----------------------------------------
+        // Rule 4: Empty catch block
+        for (int i = 0;
+             i < lines.length;
+             i++) {
 
-        for (int i = 0; i < lines.length; i++) {
+            String line =
+                    lines[i];
 
-            String line = lines[i];
-
-            if (containsEmptyCatch(line, lines, i)) {
+            if (containsEmptyCatch(
+                    line,
+                    lines,
+                    i
+            )) {
 
                 issues.add(
                         new Issue(
-                                "QUALITY",
+                                "BUG",
                                 "MEDIUM",
                                 "Empty catch block detected",
                                 "The exception is caught but no action is taken.",
                                 "Handle the exception properly or log it so failures are not silently ignored.",
                                 i + 1,
                                 line.trim(),
-                                line.trim()
+                                "catch"
                         )
                 );
             }
         }
 
-        // -----------------------------------------
-        // Rule 5: SQL Injection
-        // -----------------------------------------
+        // Rule 5: SQL injection
+        for (int i = 0;
+             i < lines.length;
+             i++) {
 
-        for (int i = 0; i < lines.length; i++) {
+            String line =
+                    lines[i];
 
-            String line = lines[i];
+            String matched =
+                    findSqlInjection(
+                            line,
+                            language
+                    );
 
-            if (findSqlInjection(line, language)) {
+            if (matched != null) {
 
                 issues.add(
                         new Issue(
                                 "SECURITY",
                                 "CRITICAL",
                                 "Possible SQL injection detected",
-                                "SQL appears to be constructed using string concatenation or direct user-controlled input.",
-                                "Use prepared statements, parameterized queries, or Spring Data/JPA query parameters.",
+                                "SQL appears to be constructed using string concatenation, which may allow untrusted input to alter the query.",
+                                "Use prepared statements or parameterized queries instead of concatenating user input into SQL.",
                                 i + 1,
                                 line.trim(),
-                                line.trim()
+                                matched
                         )
                 );
             }
         }
 
-        // -----------------------------------------
-        // Rule 6: Inefficient Loop
-        // -----------------------------------------
+        // Rule 6: Inefficient loop
+        for (int i = 0;
+             i < lines.length;
+             i++) {
 
-        for (int i = 0; i < lines.length; i++) {
+            String line =
+                    lines[i];
 
-            String line = lines[i];
+            String matched =
+                    findInefficientLoop(line);
 
-            if (findInefficientLoop(line)) {
+            if (matched != null) {
 
                 issues.add(
                         new Issue(
                                 "PERFORMANCE",
                                 "MEDIUM",
                                 "Potentially inefficient loop detected",
-                                "The loop may repeatedly perform an operation that could be optimized.",
-                                "Consider improving the loop logic or using a more efficient collection operation.",
+                                "The loop repeatedly performs an operation that may be more efficient outside the loop.",
+                                "Move invariant work outside the loop when possible.",
                                 i + 1,
                                 line.trim(),
-                                line.trim()
+                                matched
                         )
                 );
             }
         }
 
-        // -----------------------------------------
-        // Rule 7: Magic Number
-        // -----------------------------------------
+        // Rule 7: Magic number
+        for (int i = 0;
+             i < lines.length;
+             i++) {
 
-        for (int i = 0; i < lines.length; i++) {
+            String line =
+                    lines[i];
 
-            String line = lines[i];
+            String matched =
+                    findMagicNumber(
+                            line,
+                            language
+                    );
 
-            String matchedNumber =
-                    findMagicNumber(line, language);
-
-            if (matchedNumber != null) {
+            if (matched != null) {
 
                 issues.add(
                         new Issue(
                                 "QUALITY",
                                 "LOW",
                                 "Magic number detected",
-                                "A numeric value is used directly in the code without explaining its meaning.",
-                                "Replace the value with a named constant that describes its purpose.",
+                                "A numeric value is used directly without explaining its meaning.",
+                                "Replace the value with a clearly named constant.",
                                 i + 1,
                                 line.trim(),
-                                matchedNumber
+                                matched
                         )
                 );
             }
         }
 
-        // -----------------------------------------
-        // Rule 8: Long Method
-        // -----------------------------------------
-
+        // Rule 8: Long method
         addLongMethodIssues(
                 lines,
                 language,
                 issues
         );
 
-        // -----------------------------------------
-        // Rule 9: Duplicate Code
-        // -----------------------------------------
-
+        // Rule 9: Duplicate code
         addDuplicateCodeIssues(
                 lines,
                 issues
         );
 
-        // -----------------------------------------
-        // Rule 10: Unused Variable
-        // -----------------------------------------
-
+        // Rule 10: Unused variable
         addUnusedVariableIssues(
                 lines,
                 language,
                 issues
         );
 
-        // -----------------------------------------
-        // Rule 11: Null Pointer Risk
-        // -----------------------------------------
-
+        // Rule 11: Null pointer risk
         addNullPointerRiskIssues(
                 lines,
                 language,
                 issues
         );
 
-        // -----------------------------------------
         // Rule 12: Hardcoded URL / IP
-        // -----------------------------------------
-
         addHardcodedUrlIpIssues(
                 lines,
                 language,
                 issues
         );
 
-        // -----------------------------------------
-        // Calculate Scores
-        // -----------------------------------------
+        // Rule 13: TODO / FIXME
+        addTodoFixmeIssues(
+                lines,
+                issues
+        );
+
+        // Rule 14: Insecure HTTP
+        addInsecureHttpIssues(
+                lines,
+                issues
+        );
 
         int securityScore = 100;
-        int performanceScore = 100;
         int qualityScore = 100;
+        int performanceScore = 100;
         int bugScore = 100;
 
         for (Issue issue : issues) {
 
             int deduction =
-                    getDeduction(issue.severity());
+                    getDeduction(
+                            issue.severity()
+                    );
 
-            switch (issue.category().toUpperCase()) {
+            switch (issue.category()) {
 
-                case "SECURITY":
-                    securityScore -= deduction;
-                    break;
+                case "SECURITY" ->
+                        securityScore =
+                                Math.max(
+                                        0,
+                                        securityScore - deduction
+                                );
 
-                case "PERFORMANCE":
-                    performanceScore -= deduction;
-                    break;
+                case "QUALITY" ->
+                        qualityScore =
+                                Math.max(
+                                        0,
+                                        qualityScore - deduction
+                                );
 
-                case "QUALITY":
-                    qualityScore -= deduction;
-                    break;
+                case "PERFORMANCE" ->
+                        performanceScore =
+                                Math.max(
+                                        0,
+                                        performanceScore - deduction
+                                );
 
-                case "BUG":
-                    bugScore -= deduction;
-                    break;
-
-                default:
-                    break;
+                case "BUG" ->
+                        bugScore =
+                                Math.max(
+                                        0,
+                                        bugScore - deduction
+                                );
             }
         }
-
-        securityScore =
-                Math.max(0, securityScore);
-
-        performanceScore =
-                Math.max(0, performanceScore);
-
-        qualityScore =
-                Math.max(0, qualityScore);
-
-        bugScore =
-                Math.max(0, bugScore);
 
         int overallScore =
                 (securityScore
                         + performanceScore
                         + qualityScore
-                        + bugScore) / 4;
+                        + bugScore)
+                        / 4;
 
         String summary;
 
@@ -331,181 +352,63 @@ public class CodeReviewService {
         );
     }
 
-    // =========================================================
-    // RULE 1 - HARDCODED PASSWORD
-    // =========================================================
+    // ---------------------------------------------------------
+    // Rule 1
+    // ---------------------------------------------------------
 
-    private boolean findHardcodedPassword(
+    private String findHardcodedPassword(
             String line
     ) {
 
         Pattern pattern =
                 Pattern.compile(
-                        "(?i)\\b(password|passwd|pwd)\\b\\s*=\\s*[\"'][^\"']+[\"']"
+                        "(?i)(password|passwd|pwd)\\s*=\\s*[\"'][^\"']+[\"']"
                 );
 
-        return pattern.matcher(line).find();
+        Matcher matcher =
+                pattern.matcher(line);
+
+        if (matcher.find()) {
+            return matcher.group();
+        }
+
+        return null;
     }
 
-    // =========================================================
-    // RULE 2 - HARDCODED SECRET
-    // =========================================================
+    // ---------------------------------------------------------
+    // Rule 2
+    // ---------------------------------------------------------
 
-    private boolean findHardcodedSecret(
+    private String findHardcodedSecret(
             String line
     ) {
 
         Pattern pattern =
                 Pattern.compile(
-                        "(?i)\\b(api[_-]?key|secret|access[_-]?token|auth[_-]?token)\\b\\s*=\\s*[\"'][^\"']+[\"']"
+                        "(?i)(api[_-]?key|secret|token)\\s*=\\s*[\"'][^\"']+[\"']"
                 );
 
-        return pattern.matcher(line).find();
+        Matcher matcher =
+                pattern.matcher(line);
+
+        if (matcher.find()) {
+            return matcher.group();
+        }
+
+        return null;
     }
 
-    // =========================================================
-    // RULE 3 - DEBUG OUTPUT
-    // =========================================================
+    // ---------------------------------------------------------
+    // Rule 3
+    // ---------------------------------------------------------
 
     private boolean findDebugOutput(
             String line,
             String language
     ) {
 
-        if (language == null) {
+        if (line == null) {
             return false;
-        }
-
-        if (language.equalsIgnoreCase("Java")) {
-
-            return line.contains(
-                    "System.out.println"
-            ) || line.contains(
-                    "System.err.println"
-            );
-        }
-
-        if (language.equalsIgnoreCase("JavaScript")
-                || language.equalsIgnoreCase("TypeScript")) {
-
-            return line.contains(
-                    "console.log"
-            ) || line.contains(
-                    "console.error"
-            ) || line.contains(
-                    "console.warn"
-            );
-        }
-
-        if (language.equalsIgnoreCase("Python")) {
-
-            return line.trim().startsWith(
-                    "print("
-            );
-        }
-
-        return false;
-    }
-
-    // =========================================================
-    // RULE 4 - EMPTY CATCH
-    // =========================================================
-
-    private boolean containsEmptyCatch(
-            String line,
-            String[] lines,
-            int currentIndex
-    ) {
-
-        if (!line.contains("catch")) {
-            return false;
-        }
-
-        String trimmed =
-                line.trim();
-
-        if (trimmed.endsWith("{}")
-                || trimmed.endsWith("{ }")) {
-
-            return true;
-        }
-
-        if (currentIndex + 1 >= lines.length) {
-            return false;
-        }
-
-        String nextLine =
-                lines[currentIndex + 1].trim();
-
-        return nextLine.equals("}")
-                || nextLine.equals("};");
-    }
-
-    // =========================================================
-    // RULE 5 - SQL INJECTION
-    // =========================================================
-
-    private boolean findSqlInjection(
-            String line,
-            String language
-    ) {
-
-        if (language == null
-                || !language.equalsIgnoreCase("Java")) {
-
-            return false;
-        }
-
-        String lower =
-                line.toLowerCase();
-
-        boolean sqlKeyword =
-                lower.contains("select ")
-                        || lower.contains("insert ")
-                        || lower.contains("update ")
-                        || lower.contains("delete ");
-
-        boolean stringConcatenation =
-                line.contains("\" + ")
-                        || line.contains("+ \"")
-                        || line.contains("' + ")
-                        || line.contains("+ '");
-
-        return sqlKeyword
-                && stringConcatenation;
-    }
-
-    // =========================================================
-    // RULE 6 - INEFFICIENT LOOP
-    // =========================================================
-
-    private boolean findInefficientLoop(
-            String line
-    ) {
-
-        String trimmed =
-                line.trim();
-
-        return trimmed.startsWith(
-                "for ("
-        ) && trimmed.contains(
-                ".size()"
-        );
-    }
-
-    // =========================================================
-    // RULE 7 - MAGIC NUMBER
-    // =========================================================
-
-    private String findMagicNumber(
-            String line,
-            String language
-    ) {
-
-        if (language == null
-                || !language.equalsIgnoreCase("Java")) {
-
-            return null;
         }
 
         String trimmed =
@@ -513,20 +416,159 @@ public class CodeReviewService {
 
         if (trimmed.startsWith("//")
                 || trimmed.startsWith("/*")
-                || trimmed.startsWith("*")) {
+                || trimmed.startsWith("*")
+                || trimmed.startsWith("#")) {
+
+            return false;
+        }
+
+        if (language == null) {
+            return false;
+        }
+
+        String normalized =
+                language.toLowerCase();
+
+        if (normalized.contains("java")
+                || normalized.contains("javascript")
+                || normalized.contains("typescript")) {
+
+            return trimmed.contains(
+                    "System.out.println("
+            )
+                    || trimmed.contains(
+                    "console.log("
+            );
+        }
+
+        if (normalized.contains("python")) {
+
+            return trimmed.startsWith(
+                    "print("
+            );
+        }
+
+        return false;
+    }
+
+    // ---------------------------------------------------------
+    // Rule 4
+    // ---------------------------------------------------------
+
+    private boolean containsEmptyCatch(
+            String line,
+            String[] lines,
+            int currentIndex
+    ) {
+
+        String trimmed =
+                line.trim();
+
+        if (!trimmed.contains("catch")) {
+            return false;
+        }
+
+        if (trimmed.contains("{}")) {
+            return true;
+        }
+
+        if (!trimmed.endsWith("{")) {
+            return false;
+        }
+
+        int braceCount = 1;
+
+        for (int i = currentIndex + 1;
+             i < lines.length;
+             i++) {
+
+            String nextLine =
+                    lines[i].trim();
+
+            if (nextLine.isEmpty()) {
+                continue;
+            }
+
+            braceCount +=
+                    countBraces(nextLine);
+
+            if (braceCount == 0) {
+                return true;
+            }
+
+            if (!nextLine.equals("}")) {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    // ---------------------------------------------------------
+    // Rule 5
+    // ---------------------------------------------------------
+
+    private String findSqlInjection(
+            String line,
+            String language
+    ) {
+
+        if (line == null
+                || language == null) {
+
+            return null;
+        }
+
+        String normalizedLanguage =
+                language.toLowerCase();
+
+        if (!normalizedLanguage.contains("java")
+                && !normalizedLanguage.contains("javascript")
+                && !normalizedLanguage.contains("typescript")) {
 
             return null;
         }
 
         Pattern pattern =
                 Pattern.compile(
-                        "(?<![A-Za-z0-9_])\\d{2,}(?![A-Za-z0-9_])"
+                        "(?i)(select|insert|update|delete)\\b.*\\+.*"
                 );
 
         Matcher matcher =
                 pattern.matcher(line);
 
         if (matcher.find()) {
+            return matcher.group();
+        }
+
+        return null;
+    }
+
+    // ---------------------------------------------------------
+    // Rule 6
+    // ---------------------------------------------------------
+
+    private String findInefficientLoop(
+            String line
+    ) {
+
+        if (line == null) {
+            return null;
+        }
+
+        String trimmed =
+                line.trim();
+
+        Pattern pattern =
+                Pattern.compile(
+                        "(?i)for\\s*\\([^)]*\\)"
+                );
+
+        Matcher matcher =
+                pattern.matcher(trimmed);
+
+        if (matcher.find()
+                && trimmed.contains(".size()")) {
 
             return matcher.group();
         }
@@ -534,9 +576,71 @@ public class CodeReviewService {
         return null;
     }
 
-    // =========================================================
-    // RULE 8 - LONG METHOD
-    // =========================================================
+    // ---------------------------------------------------------
+    // Rule 7
+    // ---------------------------------------------------------
+
+    private String findMagicNumber(
+            String line,
+            String language
+    ) {
+
+        if (line == null
+                || language == null) {
+
+            return null;
+        }
+
+        String trimmed =
+                line.trim();
+
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+
+        if (trimmed.startsWith("//")
+                || trimmed.startsWith("/*")
+                || trimmed.startsWith("*")
+                || trimmed.startsWith("#")) {
+
+            return null;
+        }
+
+        Pattern numberPattern =
+                Pattern.compile(
+                        "(?<![A-Za-z0-9_])\\d+(?![A-Za-z0-9_])"
+                );
+
+        Matcher matcher =
+                numberPattern.matcher(trimmed);
+
+        while (matcher.find()) {
+
+            String number =
+                    matcher.group();
+
+            if (number.equals("0")
+                    || number.equals("1")) {
+
+                continue;
+            }
+
+            if (trimmed.matches(
+                    ".*\\b(class|interface)\\s+\\w+\\s*\\{?.*"
+            )) {
+
+                continue;
+            }
+
+            return number;
+        }
+
+        return null;
+    }
+
+    // ---------------------------------------------------------
+    // Rule 8
+    // ---------------------------------------------------------
 
     private void addLongMethodIssues(
             String[] lines,
@@ -544,9 +648,14 @@ public class CodeReviewService {
             List<Issue> issues
     ) {
 
-        if (language == null
-                || !language.equalsIgnoreCase("Java")) {
+        if (language == null) {
+            return;
+        }
 
+        String normalized =
+                language.toLowerCase();
+
+        if (!normalized.contains("java")) {
             return;
         }
 
@@ -554,10 +663,10 @@ public class CodeReviewService {
              i < lines.length;
              i++) {
 
-            String trimmed =
+            String line =
                     lines[i].trim();
 
-            if (!looksLikeJavaMethod(trimmed)) {
+            if (!looksLikeJavaMethod(line)) {
                 continue;
             }
 
@@ -572,7 +681,7 @@ public class CodeReviewService {
             }
 
             int braceCount = 0;
-            int end = -1;
+            int endLine = -1;
 
             for (int j = openingBrace;
                  j < lines.length;
@@ -581,14 +690,15 @@ public class CodeReviewService {
                 braceCount +=
                         countBraces(lines[j]);
 
-                if (braceCount == 0) {
+                if (j > openingBrace
+                        && braceCount == 0) {
 
-                    end = j;
+                    endLine = j;
                     break;
                 }
             }
 
-            if (end == -1) {
+            if (endLine == -1) {
                 continue;
             }
 
@@ -596,23 +706,24 @@ public class CodeReviewService {
                     countMeaningfulLines(
                             lines,
                             openingBrace + 1,
-                            end
+                            endLine
                     );
 
-            if (meaningfulLines > MAX_METHOD_LINES) {
+            if (meaningfulLines
+                    > MAX_METHOD_LINES) {
 
                 issues.add(
                         new Issue(
                                 "QUALITY",
                                 "MEDIUM",
                                 "Long method detected",
-                                "This method contains "
-                                        + meaningfulLines
-                                        + " meaningful lines of code.",
-                                "Consider breaking the method into smaller, focused methods.",
+                                "This method contains more than "
+                                        + MAX_METHOD_LINES
+                                        + " meaningful lines and may be difficult to maintain.",
+                                "Break the method into smaller methods with focused responsibilities.",
                                 i + 1,
-                                trimmed,
-                                trimmed
+                                line,
+                                line
                         )
                 );
             }
@@ -623,23 +734,22 @@ public class CodeReviewService {
             String line
     ) {
 
-        if (line.startsWith("if ")
-                || line.startsWith("if(")
-                || line.startsWith("for ")
-                || line.startsWith("for(")
-                || line.startsWith("while ")
-                || line.startsWith("while(")
-                || line.startsWith("switch ")
-                || line.startsWith("switch(")
-                || line.startsWith("catch ")
-                || line.startsWith("catch(")) {
+        if (line.isEmpty()
+                || line.startsWith("//")
+                || line.startsWith("/*")
+                || line.startsWith("*")) {
 
             return false;
         }
 
         return line.matches(
-                ".*\\b(public|private|protected|static|final|void|int|String|boolean|double|long)\\b.*\\([^;]*\\).*\\{?.*"
-        );
+                ".*\\b(public|private|protected)\\b.*\\([^)]*\\).*"
+        )
+                && !line.contains(" class ")
+                && !line.startsWith("if ")
+                && !line.startsWith("for ")
+                && !line.startsWith("while ")
+                && !line.startsWith("switch ");
     }
 
     private int findMethodOpeningBrace(
@@ -648,15 +758,14 @@ public class CodeReviewService {
     ) {
 
         for (int i = methodLine;
-             i < lines.length;
+             i < Math.min(
+                     methodLine + 3,
+                     lines.length
+             );
              i++) {
 
             if (lines[i].contains("{")) {
                 return i;
-            }
-
-            if (i > methodLine + 3) {
-                break;
             }
         }
 
@@ -696,22 +805,16 @@ public class CodeReviewService {
              i < end;
              i++) {
 
-            String line =
+            String trimmed =
                     lines[i].trim();
 
-            if (line.isEmpty()) {
+            if (trimmed.isEmpty()) {
                 continue;
             }
 
-            if (line.startsWith("//")
-                    || line.startsWith("/*")
-                    || line.startsWith("*")) {
-
-                continue;
-            }
-
-            if (line.equals("{")
-                    || line.equals("}")) {
+            if (trimmed.startsWith("//")
+                    || trimmed.startsWith("*")
+                    || trimmed.startsWith("/*")) {
 
                 continue;
             }
@@ -722,16 +825,19 @@ public class CodeReviewService {
         return count;
     }
 
-    // =========================================================
-    // RULE 9 - DUPLICATE CODE
-    // =========================================================
+    // ---------------------------------------------------------
+    // Rule 9
+    // ---------------------------------------------------------
 
     private void addDuplicateCodeIssues(
             String[] lines,
             List<Issue> issues
     ) {
 
-        Map<String, List<Integer>> occurrences =
+        Map<String, Integer> firstOccurrence =
+                new HashMap<>();
+
+        Map<String, Integer> occurrenceCount =
                 new HashMap<>();
 
         for (int i = 0;
@@ -743,45 +849,74 @@ public class CodeReviewService {
                             lines[i]
                     );
 
-            if (normalized == null) {
+            if (normalized.length()
+                    < MIN_DUPLICATE_LINE_LENGTH) {
+
                 continue;
             }
 
-            occurrences
-                    .computeIfAbsent(
+            if (normalized.startsWith("//")
+                    || normalized.startsWith("/*")
+                    || normalized.startsWith("*")
+                    || normalized.startsWith("#")) {
+
+                continue;
+            }
+
+            occurrenceCount.put(
+                    normalized,
+                    occurrenceCount.getOrDefault(
                             normalized,
-                            key -> new ArrayList<>()
-                    )
-                    .add(i);
+                            0
+                    ) + 1
+            );
+
+            firstOccurrence.putIfAbsent(
+                    normalized,
+                    i
+            );
         }
 
-        for (Map.Entry<String, List<Integer>> entry
-                : occurrences.entrySet()) {
+        for (int i = 0;
+             i < lines.length;
+             i++) {
 
-            List<Integer> lineNumbers =
-                    entry.getValue();
+            String normalized =
+                    normalizeDuplicateLine(
+                            lines[i]
+                    );
 
-            if (lineNumbers.size() < 2) {
+            if (normalized.length()
+                    < MIN_DUPLICATE_LINE_LENGTH) {
+
                 continue;
             }
 
-            for (int occurrence = 1;
-                 occurrence < lineNumbers.size();
-                 occurrence++) {
+            int count =
+                    occurrenceCount.getOrDefault(
+                            normalized,
+                            0
+                    );
 
-                int index =
-                        lineNumbers.get(occurrence);
+            Integer first =
+                    firstOccurrence.get(
+                            normalized
+                    );
+
+            if (count > 1
+                    && first != null
+                    && first != i) {
 
                 issues.add(
                         new Issue(
                                 "QUALITY",
                                 "LOW",
                                 "Duplicate code detected",
-                                "This line of code is repeated elsewhere in the source code.",
-                                "Consider extracting the repeated logic into a reusable method, variable, or constant.",
-                                index + 1,
-                                lines[index].trim(),
-                                lines[index].trim()
+                                "This line appears multiple times in the source code.",
+                                "Extract repeated logic into a reusable method or constant.",
+                                i + 1,
+                                lines[i].trim(),
+                                lines[i].trim()
                         )
                 );
             }
@@ -792,59 +927,17 @@ public class CodeReviewService {
             String line
     ) {
 
-        if (line == null) {
-            return null;
-        }
-
-        String trimmed =
-                line.trim();
-
-        if (trimmed.isEmpty()) {
-            return null;
-        }
-
-        if (trimmed.startsWith("//")
-                || trimmed.startsWith("/*")
-                || trimmed.startsWith("*")
-                || trimmed.startsWith("#")) {
-
-            return null;
-        }
-
-        if (trimmed.equals("{")
-                || trimmed.equals("}")
-                || trimmed.equals("};")) {
-
-            return null;
-        }
-
-        if (trimmed.length()
-                < MIN_DUPLICATE_LINE_LENGTH) {
-
-            return null;
-        }
-
-        if (trimmed.startsWith("if ")
-                || trimmed.startsWith("if(")
-                || trimmed.startsWith("for ")
-                || trimmed.startsWith("for(")
-                || trimmed.startsWith("while ")
-                || trimmed.startsWith("while(")
-                || trimmed.startsWith("switch ")
-                || trimmed.startsWith("switch(")) {
-
-            return null;
-        }
-
-        return trimmed.replaceAll(
-                "\\s+",
-                " "
-        );
+        return line
+                .trim()
+                .replaceAll(
+                        "\\s+",
+                        " "
+                );
     }
 
-    // =========================================================
-    // RULE 10 - UNUSED VARIABLE
-    // =========================================================
+    // ---------------------------------------------------------
+    // Rule 10
+    // ---------------------------------------------------------
 
     private void addUnusedVariableIssues(
             String[] lines,
@@ -856,13 +949,16 @@ public class CodeReviewService {
             return;
         }
 
-        if (!language.equalsIgnoreCase("Java")) {
+        String normalizedLanguage =
+                language.toLowerCase();
+
+        if (!normalizedLanguage.contains("java")) {
             return;
         }
 
         Pattern variablePattern =
                 Pattern.compile(
-                        "\\b(?:String|int|long|double|float|boolean|char|byte|short)\\s+(\\w+)\\s*(?:=|;)"
+                        "\\b(?:int|long|double|float|boolean|String)\\s+(\\w+)\\s*(?:=|;)"
                 );
 
         for (int i = 0;
@@ -871,20 +967,6 @@ public class CodeReviewService {
 
             String line =
                     lines[i];
-
-            String trimmed =
-                    line.trim();
-
-            if (trimmed.isEmpty()) {
-                continue;
-            }
-
-            if (trimmed.startsWith("//")
-                    || trimmed.startsWith("/*")
-                    || trimmed.startsWith("*")) {
-
-                continue;
-            }
 
             Matcher matcher =
                     variablePattern.matcher(line);
@@ -896,48 +978,37 @@ public class CodeReviewService {
             String variableName =
                     matcher.group(1);
 
-            boolean used = false;
-
-            Pattern usagePattern =
-                    Pattern.compile(
-                            "\\b"
-                                    + Pattern.quote(variableName)
-                                    + "\\b"
-                    );
+            int usageCount = 0;
 
             for (int j = 0;
                  j < lines.length;
                  j++) {
 
-                if (i == j) {
+                if (j == i) {
                     continue;
                 }
 
-                Matcher usageMatcher =
-                        usagePattern.matcher(
-                                lines[j]
-                        );
+                if (lines[j].matches(
+                        ".*\\b"
+                                + Pattern.quote(variableName)
+                                + "\\b.*"
+                )) {
 
-                if (usageMatcher.find()) {
-
-                    used = true;
-                    break;
+                    usageCount++;
                 }
             }
 
-            if (!used) {
+            if (usageCount == 0) {
 
                 issues.add(
                         new Issue(
                                 "QUALITY",
                                 "LOW",
-                                "Unused variable detected",
-                                "The variable '"
-                                        + variableName
-                                        + "' is declared but never used.",
-                                "Remove the unused variable or use it where required.",
+                                "Potentially unused variable",
+                                "The variable is declared but no later reference was detected.",
+                                "Remove the variable if it is unnecessary or use it where required.",
                                 i + 1,
-                                trimmed,
+                                line.trim(),
                                 variableName
                         )
                 );
@@ -945,9 +1016,9 @@ public class CodeReviewService {
         }
     }
 
-    // =========================================================
-    // RULE 11 - NULL POINTER RISK
-    // =========================================================
+    // ---------------------------------------------------------
+    // Rule 11
+    // ---------------------------------------------------------
 
     private void addNullPointerRiskIssues(
             String[] lines,
@@ -955,85 +1026,57 @@ public class CodeReviewService {
             List<Issue> issues
     ) {
 
-        if (language == null
-                || !language.equalsIgnoreCase("Java")) {
-
+        if (language == null) {
             return;
         }
 
-        Pattern assignmentPattern =
+        if (!language.toLowerCase().contains("java")) {
+            return;
+        }
+
+        Pattern declarationPattern =
                 Pattern.compile(
-                        "\\b(?:String|Object|[A-Z][A-Za-z0-9_<>]*)\\s+(\\w+)\\s*=\\s*[^;]+;"
+                        "\\b(?:String|List<[^>]+>|Map<[^>]+>|\\w+)\\s+(\\w+)\\s*=\\s*null\\s*;"
                 );
 
         for (int i = 0;
              i < lines.length;
              i++) {
 
-            String line =
-                    lines[i];
+            Matcher declarationMatcher =
+                    declarationPattern.matcher(
+                            lines[i]
+                    );
 
-            String trimmed =
-                    line.trim();
-
-            if (trimmed.isEmpty()) {
-                continue;
-            }
-
-            if (trimmed.startsWith("//")
-                    || trimmed.startsWith("/*")
-                    || trimmed.startsWith("*")) {
-
-                continue;
-            }
-
-            Matcher assignmentMatcher =
-                    assignmentPattern.matcher(line);
-
-            if (!assignmentMatcher.find()) {
+            if (!declarationMatcher.find()) {
                 continue;
             }
 
             String variableName =
-                    assignmentMatcher.group(1);
+                    declarationMatcher.group(1);
 
             for (int j = i + 1;
                  j < lines.length;
                  j++) {
 
-                String usageLine =
-                        lines[j].trim();
-
-                if (usageLine.isEmpty()) {
-                    continue;
-                }
-
-                if (usageLine.equals("}")
-                        || usageLine.startsWith("return ")) {
-
-                    break;
-                }
-
-                String matchedExpression =
+                String riskExpression =
                         findNullRiskExpression(
-                                usageLine,
+                                lines[j],
                                 variableName
                         );
 
-                if (matchedExpression != null) {
+                if (riskExpression != null) {
 
                     issues.add(
                             new Issue(
                                     "BUG",
-                                    "MEDIUM",
-                                    "Possible null pointer risk",
-                                    "The variable '"
-                                            + variableName
-                                            + "' is used without an explicit null check and may potentially contain null.",
-                                    "Check the value for null before using it, or initialize it with a guaranteed non-null value.",
+                                    "HIGH",
+                                    "Potential null pointer risk",
+                                    "A variable initialized with null is used without an obvious null check.",
+                                    "Check the variable for null before accessing it.",
                                     j + 1,
-                                    usageLine,
-                                    matchedExpression
+                                    lines[j].trim(),
+                                    riskExpression
                             )
                     );
 
@@ -1048,27 +1091,26 @@ public class CodeReviewService {
             String variableName
     ) {
 
-        Pattern directUsagePattern =
+        Pattern pattern =
                 Pattern.compile(
                         "\\b"
                                 + Pattern.quote(variableName)
-                                + "\\s*\\.\\s*[A-Za-z_][A-Za-z0-9_]*\\s*(?:\\([^)]*\\))?"
+                                + "\\s*\\.\\s*\\w+\\s*\\("
                 );
 
         Matcher matcher =
-                directUsagePattern.matcher(line);
+                pattern.matcher(line);
 
         if (matcher.find()) {
-
             return matcher.group();
         }
 
         return null;
     }
 
-    // =========================================================
-    // RULE 12 - HARDCODED URL / IP
-    // =========================================================
+    // ---------------------------------------------------------
+    // Rule 12
+    // ---------------------------------------------------------
 
     private void addHardcodedUrlIpIssues(
             String[] lines,
@@ -1080,28 +1122,10 @@ public class CodeReviewService {
             return;
         }
 
-        /*
-         * Detect hardcoded HTTP/HTTPS URLs.
-         *
-         * Example:
-         *
-         * String apiUrl =
-         *     "https://api.example.com/users";
-         */
-
         Pattern urlPattern =
                 Pattern.compile(
                         "(https?://[^\\s\"'<>]+)"
                 );
-
-        /*
-         * Detect IPv4 addresses.
-         *
-         * Example:
-         *
-         * String server =
-         *     "192.168.1.100";
-         */
 
         Pattern ipPattern =
                 Pattern.compile(
@@ -1128,7 +1152,6 @@ public class CodeReviewService {
                 continue;
             }
 
-            // Ignore comments.
             if (trimmed.startsWith("//")
                     || trimmed.startsWith("/*")
                     || trimmed.startsWith("*")
@@ -1158,10 +1181,6 @@ public class CodeReviewService {
                         )
                 );
 
-                /*
-                 * A URL can contain an IP address.
-                 * Avoid reporting the same line twice.
-                 */
                 continue;
             }
 
@@ -1189,21 +1208,168 @@ public class CodeReviewService {
         }
     }
 
-    // =========================================================
-    // SCORE CALCULATION
-    // =========================================================
+    // ---------------------------------------------------------
+    // Rule 13
+    // ---------------------------------------------------------
+
+    private void addTodoFixmeIssues(
+            String[] lines,
+            List<Issue> issues
+    ) {
+
+        Pattern todoFixmePattern =
+                Pattern.compile(
+                        "(?i)\\b(TODO|FIXME)\\b"
+                );
+
+        for (int i = 0;
+             i < lines.length;
+             i++) {
+
+            String line =
+                    lines[i];
+
+            String trimmed =
+                    line.trim();
+
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+
+            boolean isComment =
+                    trimmed.startsWith("//")
+                            || trimmed.startsWith("/*")
+                            || trimmed.startsWith("*")
+                            || trimmed.startsWith("#");
+
+            if (!isComment) {
+                continue;
+            }
+
+            Matcher matcher =
+                    todoFixmePattern.matcher(line);
+
+            if (!matcher.find()) {
+                continue;
+            }
+
+            String matchedKeyword =
+                    matcher.group(1);
+
+            String title;
+            String description;
+            String recommendation;
+
+            if (matchedKeyword.equalsIgnoreCase("TODO")) {
+
+                title =
+                        "TODO comment detected";
+
+                description =
+                        "The code contains a TODO comment indicating unfinished or pending work.";
+
+                recommendation =
+                        "Complete the pending task or remove the TODO comment once the work is finished.";
+
+            } else {
+
+                title =
+                        "FIXME comment detected";
+
+                description =
+                        "The code contains a FIXME comment indicating a known problem or area that needs correction.";
+
+                recommendation =
+                        "Resolve the identified problem and remove the FIXME comment once it is fixed.";
+            }
+
+            issues.add(
+                    new Issue(
+                            "QUALITY",
+                            "LOW",
+                            title,
+                            description,
+                            recommendation,
+                            i + 1,
+                            trimmed,
+                            matchedKeyword
+                    )
+            );
+        }
+    }
+
+    // ---------------------------------------------------------
+    // Rule 14
+    // ---------------------------------------------------------
+
+    private void addInsecureHttpIssues(
+            String[] lines,
+            List<Issue> issues
+    ) {
+
+        Pattern httpPattern =
+                Pattern.compile(
+                        "(?i)\\bhttp://[^\\s\"'<>]+"
+                );
+
+        for (int i = 0;
+             i < lines.length;
+             i++) {
+
+            String line =
+                    lines[i];
+
+            String trimmed =
+                    line.trim();
+
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+
+            boolean isComment =
+                    trimmed.startsWith("//")
+                            || trimmed.startsWith("/*")
+                            || trimmed.startsWith("*")
+                            || trimmed.startsWith("#");
+
+            if (isComment) {
+                continue;
+            }
+
+            Matcher matcher =
+                    httpPattern.matcher(line);
+
+            if (!matcher.find()) {
+                continue;
+            }
+
+            String matchedHttpUrl =
+                    matcher.group();
+
+            issues.add(
+                    new Issue(
+                            "SECURITY",
+                            "MEDIUM",
+                            "Insecure HTTP detected",
+                            "The code uses an HTTP URL, which does not provide encrypted communication and may expose transmitted data.",
+                            "Use HTTPS instead of HTTP whenever the endpoint supports secure communication.",
+                            i + 1,
+                            trimmed,
+                            matchedHttpUrl
+                    )
+            );
+        }
+    }
+
+    // ---------------------------------------------------------
+    // Score calculation
+    // ---------------------------------------------------------
 
     private int getDeduction(
             String severity
     ) {
 
-        if (severity == null) {
-            return 0;
-        }
-
-        return switch (
-                severity.toUpperCase()
-        ) {
+        return switch (severity) {
 
             case "CRITICAL" -> 40;
 
@@ -1217,9 +1383,9 @@ public class CodeReviewService {
         };
     }
 
-    // =========================================================
-    // RESPONSE RECORDS
-    // =========================================================
+    // ---------------------------------------------------------
+    // Response records
+    // ---------------------------------------------------------
 
     public record ReviewAnalysis(
             int score,
