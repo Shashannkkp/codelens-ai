@@ -12,10 +12,12 @@ import {
   Lightbulb,
   Activity,
   ChevronRight,
+  RotateCcw,
+  Trash2,
+  FileCode2,
 } from "lucide-react";
 
-function App() {
-  const [code, setCode] = useState(`public class UserService {
+const DEFAULT_CODE = `public class UserService {
 
     public void processUsers(List<String> users) {
 
@@ -25,10 +27,15 @@ function App() {
 
         }
     }
-}`);
+}`;
+
+function App() {
+  const [code, setCode] = useState(DEFAULT_CODE);
 
   const [language, setLanguage] = useState("Java");
+
   const [review, setReview] = useState(null);
+
   const [loading, setLoading] = useState(false);
 
   const reviewCode = async () => {
@@ -73,6 +80,23 @@ function App() {
     }
   };
 
+  const clearCode = () => {
+    setCode("");
+    setReview(null);
+  };
+
+  const resetCode = () => {
+    setCode(DEFAULT_CODE);
+    setLanguage("Java");
+    setReview(null);
+  };
+
+  const lineCount = code
+    ? code.split("\n").length
+    : 0;
+
+  const characterCount = code.length;
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
 
@@ -85,8 +109,6 @@ function App() {
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
 
           <div className="h-16 flex items-center justify-between">
-
-            {/* Logo */}
 
             <div className="flex items-center gap-3">
 
@@ -105,9 +127,6 @@ function App() {
               </div>
 
             </div>
-
-
-            {/* Status */}
 
             <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-full border border-slate-800 bg-slate-900/70">
 
@@ -163,8 +182,6 @@ function App() {
             </div>
 
 
-            {/* Feature indicators */}
-
             <div className="flex flex-wrap gap-2">
 
               <FeatureBadge
@@ -189,7 +206,9 @@ function App() {
         </section>
 
 
-        {/* Main Workspace */}
+        {/* =========================
+            MAIN WORKSPACE
+        ========================== */}
 
         <section className="grid grid-cols-1 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] gap-6 items-start">
 
@@ -201,50 +220,137 @@ function App() {
 
             {/* Editor Header */}
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-5 py-4 border-b border-slate-800">
+            <div className="px-5 py-4 border-b border-slate-800">
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
-                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                  <Code2
-                    size={17}
-                    className="text-blue-400"
-                  />
+                {/* Title */}
+
+                <div className="flex items-center gap-3">
+
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+
+                    <FileCode2
+                      size={17}
+                      className="text-blue-400"
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <p className="font-semibold text-sm">
+                      Source Code
+                    </p>
+
+                    <p className="text-xs text-slate-500">
+                      Paste or edit your code
+                    </p>
+
+                  </div>
+
                 </div>
 
-                <div>
-                  <p className="font-semibold text-sm">
-                    Source Code
-                  </p>
 
-                  <p className="text-xs text-slate-500">
-                    Paste or edit your code
-                  </p>
+                {/* Language */}
+
+                <div className="relative">
+
+                  <select
+                    value={language}
+                    onChange={(e) =>
+                      setLanguage(e.target.value)
+                    }
+                    className="appearance-none w-full sm:w-36 bg-slate-800 border border-slate-700 rounded-lg pl-3 pr-8 py-2 text-sm text-slate-200 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition cursor-pointer"
+                  >
+                    <option>Java</option>
+                    <option>JavaScript</option>
+                    <option>Python</option>
+                  </select>
+
+                  <Code2
+                    size={14}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
+                  />
+
                 </div>
 
               </div>
 
 
-              <select
-                value={language}
-                onChange={(e) =>
-                  setLanguage(e.target.value)
-                }
-                className="w-full sm:w-auto bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-blue-500 transition"
-              >
-                <option>Java</option>
-                <option>JavaScript</option>
-                <option>Python</option>
-              </select>
+              {/* Editor Actions */}
+
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-800/70">
+
+                <div className="flex items-center gap-2">
+
+                  <button
+                    onClick={resetCode}
+                    type="button"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                  >
+
+                    <RotateCcw size={13} />
+
+                    Reset Example
+
+                  </button>
+
+                  <button
+                    onClick={clearCode}
+                    type="button"
+                    disabled={!code}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-slate-500 hover:text-red-400 hover:bg-red-500/5 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  >
+
+                    <Trash2 size={13} />
+
+                    Clear
+
+                  </button>
+
+                </div>
+
+
+                <span className="text-[10px] text-slate-600 font-mono">
+                  {language}
+                </span>
+
+              </div>
 
             </div>
 
 
-            {/* Editor */}
+            {/* =========================
+                CODE AREA
+            ========================== */}
 
             <div className="p-4">
 
-              <div className="relative">
+              <div className="relative flex h-[420px] sm:h-[480px] rounded-xl overflow-hidden border border-slate-800 bg-slate-950 focus-within:border-blue-500/60 focus-within:ring-1 focus-within:ring-blue-500/20 transition">
+
+                {/* Line Numbers */}
+
+                <div
+                  aria-hidden="true"
+                  className="w-12 shrink-0 overflow-hidden bg-slate-950 border-r border-slate-800 text-right font-mono text-xs leading-6 text-slate-700 select-none py-4 pr-3"
+                >
+
+                  {Array.from(
+                    {
+                      length: Math.max(lineCount, 1),
+                    },
+                    (_, index) => (
+                      <div key={index}>
+                        {index + 1}
+                      </div>
+                    )
+                  )}
+
+                </div>
+
+
+                {/* Text Area */}
 
                 <textarea
                   value={code}
@@ -252,17 +358,33 @@ function App() {
                     setCode(e.target.value)
                   }
                   spellCheck="false"
-                  className="w-full h-[420px] sm:h-[480px] resize-none bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-sm leading-6 text-slate-300 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition placeholder:text-slate-700"
+                  wrap="off"
+                  className="flex-1 min-w-0 h-full resize-none bg-transparent p-4 font-mono text-sm leading-6 text-slate-300 outline-none overflow-auto whitespace-pre placeholder:text-slate-700"
                   placeholder="Paste your code here..."
                 />
 
-                <div className="absolute bottom-3 right-3 pointer-events-none">
+              </div>
 
-                  <span className="px-2 py-1 rounded-md bg-slate-900/90 border border-slate-800 text-[10px] text-slate-600 font-mono">
-                    {code.split("\n").length} lines
+
+              {/* Editor Footer */}
+
+              <div className="flex items-center justify-between mt-3 px-1">
+
+                <div className="flex items-center gap-4 text-[11px] text-slate-600 font-mono">
+
+                  <span>
+                    {lineCount} lines
+                  </span>
+
+                  <span>
+                    {characterCount} characters
                   </span>
 
                 </div>
+
+                <span className="text-[11px] text-slate-600">
+                  Plain text editor
+                </span>
 
               </div>
 
@@ -319,8 +441,6 @@ function App() {
             {review && (
               <>
 
-                {/* Score Cards */}
-
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
 
                   <ScoreCard
@@ -349,8 +469,6 @@ function App() {
 
                 </div>
 
-
-                {/* Summary */}
 
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
 
@@ -381,8 +499,6 @@ function App() {
 
                 </div>
 
-
-                {/* Issues */}
 
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
 
@@ -457,9 +573,7 @@ function App() {
       </main>
 
 
-      {/* =========================
-          FOOTER
-      ========================== */}
+      {/* Footer */}
 
       <footer className="border-t border-slate-800/80 mt-8">
 
@@ -549,7 +663,6 @@ function ScoreCard({
 
       </div>
 
-
       <div
         className={`text-2xl sm:text-3xl font-bold ${getScoreColor()}`}
       >
@@ -592,8 +705,6 @@ function IssueCard({ issue }) {
   return (
     <div className="border border-slate-800 rounded-xl bg-slate-950/50 overflow-hidden">
 
-      {/* Header */}
-
       <div className="px-4 sm:px-5 py-4 border-b border-slate-800 bg-slate-900/60">
 
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -623,9 +734,6 @@ function IssueCard({ issue }) {
 
           </div>
 
-
-          {/* Line Number */}
-
           <div className="shrink-0 flex items-center gap-2">
 
             <span className="text-xs text-slate-500">
@@ -643,8 +751,6 @@ function IssueCard({ issue }) {
       </div>
 
 
-      {/* Issue Content */}
-
       <div className="p-4 sm:p-5">
 
         <div className="flex items-center justify-between mb-2">
@@ -661,8 +767,6 @@ function IssueCard({ issue }) {
 
         </div>
 
-
-        {/* Code */}
 
         <div className="rounded-lg overflow-x-auto border border-slate-800 bg-[#080d18]">
 
@@ -688,8 +792,6 @@ function IssueCard({ issue }) {
         </div>
 
 
-        {/* Matched Code */}
-
         {issue.matchedCode && (
 
           <div className="mt-4">
@@ -710,8 +812,6 @@ function IssueCard({ issue }) {
 
         )}
 
-
-        {/* Problem */}
 
         <div className="mt-5">
 
@@ -734,8 +834,6 @@ function IssueCard({ issue }) {
 
         </div>
 
-
-        {/* Recommendation */}
 
         <div className="mt-5">
 
