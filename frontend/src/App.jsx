@@ -88,22 +88,22 @@ function App() {
 
       {/* Main Application Area */}
       <main className="flex-1 min-h-0 overflow-hidden">
-        <div className="h-full max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col">
+        <div className="h-full max-w-375 mx-auto px-4 sm:px-6 lg:px-1 py-3 flex flex-col">
 
           {/* Hero Section */}
           <section className="shrink-0 mb-5">
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-2">
 
               <div>
-                <div className="flex items-center gap-2 text-blue-400 text-sm font-medium mb-2">
-                  <Sparkles size={16} />
-                  <span>AI-powered developer tooling</span>
+                <div className="flex items-center gap-2 text-blue-400 text-sm font-medium px-5 ">
+                  <Sparkles size={14} />
+                  <span>Developer tool</span>
                 </div>
 
               </div>
 
               {/* Feature Badges */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 px-4">
                 <FeatureBadge
                   icon={<ShieldCheck size={14} />}
                   text="Security"
@@ -124,7 +124,7 @@ function App() {
           </section>
 
           {/* Editor + Results */}
-          <section className="flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <section className="flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-2 gap-1">
 
             {/* Left - Code Editor */}
             <div className="min-h-0 h-full">
@@ -157,7 +157,7 @@ function App() {
 
 function FeatureBadge({ icon, text }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-900/70 text-xs text-slate-400">
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-800 bg-slate-900/70 text-xs text-slate-400">
       {icon}
       {text}
     </div>

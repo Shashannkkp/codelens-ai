@@ -32,14 +32,14 @@ function ReviewResults({ review, loading }) {
   ).length;
 
   return (
-    <div className="h-full min-h-0 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl shadow-black/20 flex flex-col">
+    <div className="h-full min-h-0 bg-slate-900 border-zinc-800  overflow-hidden shadow-2xl shadow-black/20 flex flex-col">
 
       {/* Header */}
       <div className="shrink-0 px-5 py-4 border-b border-slate-800 bg-slate-900/90">
         <div className="flex items-center justify-between">
 
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-blue-500/10 border border-zinc-800 flex items-center justify-center">
               <SearchCheck size={18} className="text-blue-400" />
             </div>
 

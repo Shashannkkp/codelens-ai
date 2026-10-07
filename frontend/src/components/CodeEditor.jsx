@@ -1,5 +1,4 @@
 import {
-  Code2,
   Play,
   ChevronRight,
   RotateCcw,
@@ -47,12 +46,12 @@ function CodeEditor({
     languageConfig[language] || languageConfig.Java;
 
   return (
-    <div className="h-full w-full min-h-0 bg-transparent border border-slate-800 rounded-2xl overflow-hidden shadow-2xl shadow-black/20 flex flex-col">
+    <div className="h-full w-full min-h-0 bg-transparent border-zinc-800 overflow-hidden shadow-2xl shadow-black/20 flex flex-col">
 
       {/* =========================================
           Editor Header
       ========================================= */}
-      <div className="shrink-0 border-b border-slate-800 bg-transparent">
+      <div className="shrink-0 border-b border-zinc-800 bg-transparent">
 
         <div className="px-4 py-3 flex items-center justify-between gap-3">
 
@@ -60,7 +59,7 @@ function CodeEditor({
           <div className="flex items-center gap-3 min-w-0">
 
             {/* Icon */}
-            <div className="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-blue-500/10  flex items-center justify-center shrink-0">
               <FileCode2
                 size={18}
                 className="text-blue-400"
@@ -72,14 +71,12 @@ function CodeEditor({
               <div className="flex items-center gap-2">
 
                 <h3 className="text-sm font-semibold text-white">
-                  Code Editor
+                  Code
                 </h3>
 
               </div>
 
-              <p className="text-[11px] text-slate-600 mt-0.5">
-                Write or paste your code
-              </p>
+            
             </div>
 
           </div>
@@ -95,7 +92,7 @@ function CodeEditor({
                 ${currentLanguage.bg}
                 ${currentLanguage.border}
                 ${currentLanguage.color}
-                border
+                
                 rounded-lg
                 pl-3
                 pr-8
@@ -140,26 +137,9 @@ function CodeEditor({
           </div>
 
         </div>
+      
 
-        {/* File Tab */}
-        <div className="px-4 flex items-end">
-
-          <div className="flex items-center gap-2 px-3 py-2 border border-b-0 border-slate-800 rounded-t-lg bg-slate-950/70">
-
-            <Code2
-              size={13}
-              className={currentLanguage.color}
-            />
-
-            <span className="text-xs text-slate-400 font-mono">
-              CodeLens{currentLanguage.extension}
-            </span>
-
-          </div>
-
-        </div>
-
-      </div>
+      </div> 
 
 
       {/* =========================================
@@ -168,7 +148,7 @@ function CodeEditor({
       <div className="flex-1 min-h-0 flex bg-slate-950">
 
         {/* Line Numbers */}
-        <div className="shrink-0 w-12 border-r border-slate-800 bg-slate-950/80 overflow-hidden select-none">
+        <div className="shrink-0 w-10  bg-slate-950/80 overflow-hidden select-none">
 
           <div className="py-4 text-right pr-3 text-[12px] leading-6 font-mono text-slate-700">
 
@@ -222,15 +202,15 @@ function CodeEditor({
       {/* =========================================
           Editor Footer
       ========================================= */}
-      <div className=" bg-transparent shrink-0 border-t border-slate-900">
+      <div className=" bg-transparent shrink-0 border-t border-zinc-800">
 
         {/* Statistics */}
-        <div className="px-4 py-2 flex items-center justify-between border-b border-slate-900">
+        <div className="px-4 py-1 flex items-center justify-between">
 
           <div className="flex items-center gap-4">
 
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-slate-600">
+              <span className="text-[10px] text-white-600">
                 Lines
               </span>
 
@@ -239,10 +219,10 @@ function CodeEditor({
               </span>
             </div>
 
-            <div className="w-px h-3 bg-slate-800" />
+            
 
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-slate-600">
+              <span className="text-[10px] text-white-600">
                 Characters
               </span>
 
@@ -267,7 +247,7 @@ function CodeEditor({
 
 
         {/* Action Buttons */}
-        <div className="p-3 flex items-center justify-between gap-3">
+        <div className="p-2 flex items-center justify-between gap-3">
 
           {/* Secondary Actions */}
           <div className="flex items-center gap-2">
@@ -283,13 +263,13 @@ function CodeEditor({
                 px-3
                 py-2
                 rounded-lg
-                border
+                
                 border-slate-800
                 bg-slate-950/60
                 text-slate-500
                 text-xs
                 transition
-                hover:text-red-400
+                hover:text-red-500
                 hover:border-red-500/20
                 hover:bg-red-500/5
                 disabled:opacity-40
@@ -299,36 +279,6 @@ function CodeEditor({
               <Trash2 size={14} />
               <span className="hidden sm:inline">
                 Clear
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={resetCode}
-              disabled={loading}
-              className="
-                flex
-                items-center
-                gap-2
-                px-3
-                py-2
-                rounded-lg
-                border
-                border-slate-800
-                bg-slate-950/60
-                text-slate-500
-                text-xs
-                transition
-                hover:text-slate-300
-                hover:border-slate-700
-                hover:bg-slate-800/40
-                disabled:opacity-40
-                disabled:cursor-not-allowed
-              "
-            >
-              <RotateCcw size={14} />
-              <span className="hidden sm:inline">
-                Reset
               </span>
             </button>
 
@@ -350,8 +300,8 @@ function CodeEditor({
               py-2.5
               rounded-lg
               bg-blue-600
-              hover:bg-blue-500
-              active:bg-blue-700
+              hover:bg-green-500
+              active:bg-purple-700
               text-white
               text-xs
               font-semibold
