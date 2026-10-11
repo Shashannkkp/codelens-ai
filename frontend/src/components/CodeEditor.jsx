@@ -1,8 +1,6 @@
-
 import {
   Code2,
   Play,
-  RotateCcw,
   Trash2,
 } from "lucide-react";
 
