@@ -1,5 +1,6 @@
 import { Code2 } from "lucide-react";
 
+
 function Navbar() {
   return (
     <header className="shrink-0 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
@@ -32,6 +33,7 @@ function Navbar() {
 
           </div>
 
+        
 
           {/* Engine Status */}
 
