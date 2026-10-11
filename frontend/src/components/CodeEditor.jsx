@@ -159,7 +159,6 @@ function CodeEditor({
         </span>
       </div>
 
-      
     </div>
   );
 }
