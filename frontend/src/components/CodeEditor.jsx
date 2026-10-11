@@ -61,10 +61,8 @@ function CodeEditor({
             type="button"
             onClick={clearCode}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-3 py-2 text-xs text-white hover:text-red-600 hover:bg-red-500/20  hover:border-red-500/20
-             rounded transition disabled:opacity-40 disabled:cursor-not-allowed
-                
-            "
+            className="inline-flex items-center gap-2 px-3 py-2 text-xs text-white hover:text-red-600
+             rounded transition disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Trash2 size={14} />
             Clear
