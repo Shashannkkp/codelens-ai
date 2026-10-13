@@ -26,15 +26,15 @@ function CodeEditor({
   const lineHeight = 24;
 
   return (
-    <div className="h-full min-h-0 flex flex-col overflow-hidden  bg-slate-950 rounded">
+    <div className="h-full min-h-0 flex flex-col overflow-hidden bg-slate-950 rounded">
 
       {/* Editor toolbar */}
-      <div className="shrink-0 h-12 px-4 flex items-center justify-between border-b border-slate-800 bg-slate-900">
+      <div className="shrink-0 h-12 px-4 flex items-center justify-between bg-slate-900">
 
            <div className="flex items-center gap-2">
           <label
             htmlFor="code-language"
-            className="text-xs text-slate-500"
+            className="text-xs text-white hover:text-red-500"
           >
             Code
           </label>
@@ -44,7 +44,7 @@ function CodeEditor({
             value={language}
             onChange={(event) => setLanguage(event.target.value)}
             disabled={loading}
-            className="bg-slate-950 rounded px-2 py-1.5 text-xs text-slate-300 outline-none focus:border-slate-500"
+            className="bg-slate-950 rounded px-2 py-1.5 text-xs text-slate-300 outline-none focus:border-slate-500 hover:text-green-500"
           >
             <option value="Java">Java</option>
             <option value="JavaScript">JavaScript</option>
@@ -52,7 +52,7 @@ function CodeEditor({
           </select>
         </div>
         {/* Actions */}
-      <div className="shrink-0 px-3 py-3 flex items-center justify-between gap-3 border-t border-slate-800 bg-slate-900">
+      <div className="shrink-0 px-3 py-3 flex items-center justify-between gap-3 bg-slate-900">
 
         <div className="flex items-center gap-1">
           <button

@@ -32,7 +32,7 @@ function ReviewResults({ review, loading }) {
   ).length;
 
   return (
-    <div className="h-full min-h-0 bg-slate-900 border-zinc-800  overflow-hidden shadow-2xl shadow-black/20 flex flex-col">
+    <div className="h-full min-h-0  rounded bg-slate-900   overflow-hidden shadow-2xl shadow-black/20 flex flex-col">
 
       {/* Header */}
       <div className="shrink-0 px-5 py-4 border-b border-slate-800 bg-slate-900/90">
