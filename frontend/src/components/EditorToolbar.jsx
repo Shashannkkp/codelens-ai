@@ -1,4 +1,5 @@
 
+
 import { Play, Trash2 } from "lucide-react";
 
 export default function EditorToolbar({
@@ -12,6 +13,8 @@ export default function EditorToolbar({
   return (
     <div className="shrink-0 h-12 px-4 flex items-center justify-between gap-3 bg-slate-900">
       {/* Language selector */}
+
+      
       <div className="flex items-center gap-2">
         <label
           htmlFor="code-language"

@@ -1,6 +1,6 @@
-import EditorToolbar from "./EditorToolbar";
 
-import { Code2 } from "lucide-react";
+import EditorToolbar from "./EditorToolbar";
+import EditorFileTab from "./EditorFileTab";
 
 function CodeEditor({
   code,
@@ -13,43 +13,25 @@ function CodeEditor({
 }) {
   const lines = code.split("\n");
   const lineCount = lines.length;
-
-  const languageExtensions = {
-    Java: "CodeLens.java",
-    JavaScript: "CodeLens.js",
-    Python: "CodeLens.py",
-  };
-
   const lineHeight = 24;
 
   return (
     <div className="h-full min-h-0 flex flex-col overflow-hidden bg-slate-950 rounded">
-        
-        
       {/* Editor toolbar */}
       <EditorToolbar
-  language={language}
-  setLanguage={setLanguage}
-  loading={loading}
-  code={code}
-  reviewCode={reviewCode}
-  clearCode={clearCode}
-/>
+        language={language}
+        setLanguage={setLanguage}
+        loading={loading}
+        code={code}
+        reviewCode={reviewCode}
+        clearCode={clearCode}
+      />
 
       {/* File tab */}
-      <div className="shrink-0 h-9 px-4 flex items-center   bg-slate-950">
-        <div className="h-full flex items-center gap-2 px-2  text-slate-300">
-          <Code2 size={13} className="text-slate-500" />
-
-          <span className="text-xs font-mono">
-            {languageExtensions[language] || "CodeLens.txt"}
-          </span>
-        </div>
-      </div>
+      <EditorFileTab language={language} />
 
       {/* Code editing area */}
       <div className="flex-1 min-h-0 flex overflow-hidden bg-slate-950">
-
         {/* Line numbers */}
         <div
           className="shrink-0 w-12 overflow-hidden pt-4 pr-3 text-right font-mono text-xs text-slate-600 select-none"
@@ -76,6 +58,7 @@ function CodeEditor({
 
               const start = event.target.selectionStart;
               const end = event.target.selectionEnd;
+
               const updatedCode =
                 code.substring(0, start) +
                 "    " +
@@ -100,7 +83,7 @@ function CodeEditor({
       </div>
 
       {/* Editor status bar */}
-      <div className="shrink-0 h-8 px-3 flex items-center justify-between gap-3  bg-slate-900 text-[11px] text-slate-500">
+      <div className="shrink-0 h-8 px-3 flex items-center justify-between gap-3 bg-slate-900 text-[11px] text-slate-500">
         <div className="flex items-center gap-3">
           <span>{language}</span>
           <span>Ln {lineCount}</span>
@@ -111,7 +94,6 @@ function CodeEditor({
           {code.length} characters
         </span>
       </div>
-
     </div>
   );
 }
