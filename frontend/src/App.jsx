@@ -9,6 +9,8 @@ import GitHubExplorer from "./components/GitHubExplorer";
 import CodeEditor from "./components/CodeEditor";
 import ReviewResults from "./components/ReviewResults";
 import ReviewResultsHeader from "./components/ReviewResultsHeader";
+import WorkspaceLayout from "./components/WorkspaceLayout";
+
 
 import useGitHubRepository from "./hooks/useGitHubRepository";
 import useCodeReview from "./hooks/useCodeReview";
@@ -90,7 +92,7 @@ export default function App() {
 />
 
       {/* Three-panel workspace */}
-      <main className="grid min-h-0 flex-1 grid-cols-1 gap-0 overflow-hidden xl:grid-cols-[220px_minmax(0,1fr)_530px]">
+      <WorkspaceLayout>
         {/* GitHub Explorer */}
         <GitHubExplorer
           repoUrl={github.repoUrl}
@@ -147,7 +149,7 @@ export default function App() {
             </span>
           </div>
         </section>
-      </main>
+      </WorkspaceLayout>
 
       {/* Footer */}
       <AppFooter />
