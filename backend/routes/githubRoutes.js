@@ -23,7 +23,6 @@ const SUPPORTED_EXTENSIONS = [
   ".cpp",
   ".cs",
   ".rb",
-  ".php",
   ".sh",
 ];
 
@@ -40,9 +39,7 @@ function parseGitHubUrl(repoUrl) {
       return null;
     }
 
-    const parts = url.pathname
-      .split("/")
-      .filter(Boolean);
+    const parts = url.pathname.split("/").filter(Boolean);
 
     if (parts.length !== 2) {
       return null;
@@ -66,25 +63,53 @@ function parseGitHubUrl(repoUrl) {
   }
 }
 
+function getGitHubError(response) {
+  const remaining = response.headers.get("x-ratelimit-remaining");
+  const reset = response.headers.get("x-ratelimit-reset");
+
+  if (response.status === 401) {
+    return "GitHub rejected the configured token. Check GITHUB_TOKEN in backend/.env.";
+  }
+
+  if (response.status === 403 || response.status === 429) {
+    if (remaining === "0" && reset) {
+      const resetTime = new Date(Number(reset) * 1000);
+
+      return `GitHub API rate limit reached. Try again after ${resetTime.toLocaleString()}.`;
+    }
+
+    return "GitHub denied the API request. Check your token permissions or wait before retrying.";
+  }
+
+  if (response.status === 404) {
+    return "Repository or file not found. Check the URL and make sure the repository is public.";
+  }
+
+  return `GitHub API request failed (${response.status}).`;
+}
+
 async function githubGet(url) {
-  const response = await fetch(url, {
-    headers: {
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-      "User-Agent": "CodeLens-AI",
-    },
-  });
+  const headers = {
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "CodeLens-AI",
+  };
+
+  const token = process.env.GITHUB_TOKEN?.trim();
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(url, { headers });
 
   if (!response.ok) {
-    const error = new Error(
-      response.status === 404
-        ? "Repository or file not found. Check the URL and make sure the repository is public."
-        : response.status === 403 || response.status === 429
-          ? "GitHub API rate limit reached. Please wait and try again."
-          : `GitHub API request failed (${response.status}).`
-    );
+    const error = new Error(getGitHubError(response));
+    error.status = response.status === 429 ? 429 :
+      response.status === 403 ? 403 :
+      response.status === 401 ? 500 :
+      response.status === 404 ? 404 : 502;
 
-    error.status = response.status;
     throw error;
   }
 
@@ -95,7 +120,7 @@ async function githubGet(url) {
 // Fetch the default branch and source-file list.
 router.post("/repository", async (req, res) => {
   try {
-    const { repoUrl } = req.body;
+    const { repoUrl } = req.body || {};
 
     if (typeof repoUrl !== "string" || !repoUrl.trim()) {
       return res.status(400).json({
@@ -113,6 +138,7 @@ router.post("/repository", async (req, res) => {
     }
 
     const { owner, repo } = repository;
+
     const repoApiUrl =
       `${GITHUB_API}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
 
@@ -156,7 +182,6 @@ router.post("/repository", async (req, res) => {
 
         const lowerPath = item.path.toLowerCase();
 
-        // Exclude common generated and dependency folders.
         if (
           /(^|\/)(node_modules|vendor|dist|build|\.git|coverage)\//i.test(
             lowerPath
@@ -196,7 +221,7 @@ router.post("/repository", async (req, res) => {
 // Fetch one selected source file.
 router.post("/file", async (req, res) => {
   try {
-    const { repoUrl, path, branch } = req.body;
+    const { repoUrl, path, branch } = req.body || {};
 
     if (
       typeof repoUrl !== "string" ||
