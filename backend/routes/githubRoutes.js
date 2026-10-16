@@ -170,9 +170,13 @@ router.post("/repository", async (req, res) => {
       });
     }
 
-    const files = (treeData.tree || [])
+    const allFiles = (treeData.tree || [])
       .filter((item) => {
-        if (item.type !== "blob" || !item.path || !item.size) {
+        if (
+          item.type !== "blob" ||
+          typeof item.path !== "string" ||
+          typeof item.size !== "number"
+        ) {
           return false;
         }
 
@@ -198,16 +202,22 @@ router.post("/repository", async (req, res) => {
         path: item.path,
         size: item.size,
       }))
-      .sort((a, b) => a.path.localeCompare(b.path))
-      .slice(0, 500);
+      .sort((a, b) => a.path.localeCompare(b.path));
+
+    const totalFiles = allFiles.length;
+    const files = allFiles.slice(0, 500);
 
     return res.json({
       repository: `${owner}/${repo}`,
       repoUrl: `https://github.com/${owner}/${repo}`,
       branch,
       files,
-      totalFiles: files.length,
+      totalFiles,
+      returnedFiles: files.length,
+      hasMoreFiles: totalFiles > files.length,
+      fileLimit: 500,
     });
+
   } catch (error) {
     console.error("GitHub repository error:", error.message);
 

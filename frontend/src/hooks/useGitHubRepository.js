@@ -87,8 +87,15 @@ export default function useGitHubRepository({
         setSelectedPath(firstFile.path);
         expandParentFolders(firstFile.path);
 
+        const fileCountMessage =
+           `Loaded ${sourceFiles.length} supported source files.`;
+
+        const limitMessage = data.hasMoreFiles
+           ? ` The repository contains ${data.totalFiles} eligible files, but only the first ${data.fileLimit || 500} files are listed.`
+           : "";
+
         setGithubMessage(
-          `Loaded ${sourceFiles.length} supported source files. Select a file to import it.`
+           `${fileCountMessage}${limitMessage} Select a file to import it.`
         );
       } else {
         setGithubMessage(
