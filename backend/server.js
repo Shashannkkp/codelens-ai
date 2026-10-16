@@ -62,23 +62,44 @@ function combineIssues(aiIssues = [], ruleIssues = []) {
     const combined = [];
     const seen = new Set();
 
-    for (const issue of [...aiIssues, ...ruleIssues]) {
-        const key = [
-            issue.category,
-            issue.lineNumber,
-            issue.title
-        ]
-            .map((value) => String(value || "").trim().toLowerCase())
-            .join("|");
+    const normalize = (value) =>
+        String(value ?? "")
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, " ");
 
-        if (!seen.has(key)) {
-            seen.add(key);
-            combined.push(issue);
+    for (const issue of [...aiIssues, ...ruleIssues]) {
+        if (!issue || typeof issue !== "object") {
+            continue;
         }
+
+        const category = normalize(issue.category);
+        const title = normalize(issue.title);
+        const lineNumber = Number(issue.lineNumber);
+
+        // Keep findings with incomplete identities instead of deduplicating them.
+        const key =
+            category &&
+            title &&
+            Number.isInteger(lineNumber) &&
+            lineNumber >= 0
+                ? [category, lineNumber, title].join("|")
+                : null;
+
+        if (key && seen.has(key)) {
+            continue;
+        }
+
+        if (key) {
+            seen.add(key);
+        }
+
+        combined.push(issue);
     }
 
     return combined;
 }
+
 
 // Gemini-powered code review
 app.post("/api/review", async (req, res) => {

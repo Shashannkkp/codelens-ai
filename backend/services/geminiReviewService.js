@@ -12,24 +12,82 @@ const getGeminiClient = async () => {
     return new GoogleGenAI({ apiKey });
 };
 
+
 function parseGeminiJson(text) {
     if (!text || typeof text !== "string") {
-        throw new Error("Gemini returned an empty response.");
+        throw new Error(
+            "Gemini returned an empty response. Please try again."
+        );
     }
 
     const cleaned = text
         .trim()
         .replace(/^```(?:json)?\s*/i, "")
-        .replace(/\s*```$/, "");
+        .replace(/\s*```$/, "")
+        .trim();
 
+    // First, try parsing the complete response.
     try {
         return JSON.parse(cleaned);
     } catch {
+        // Gemini may include extra text around its JSON response.
+    }
+
+    // Find the first JSON object and extract it safely,
+    // accounting for braces inside strings and escaped quotes.
+    const start = cleaned.indexOf("{");
+
+    if (start === -1) {
         throw new Error(
-            "Gemini returned invalid JSON. Please try the review again."
+            "Gemini did not return a JSON review object. Please try again."
         );
     }
+
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+
+    for (let i = start; i < cleaned.length; i++) {
+        const char = cleaned[i];
+
+        if (inString) {
+            if (escaped) {
+                escaped = false;
+            } else if (char === "\\") {
+                escaped = true;
+            } else if (char === '"') {
+                inString = false;
+            }
+
+            continue;
+        }
+
+        if (char === '"') {
+            inString = true;
+        } else if (char === "{") {
+            depth++;
+        } else if (char === "}") {
+            depth--;
+
+            if (depth === 0) {
+                const jsonText = cleaned.slice(start, i + 1);
+
+                try {
+                    return JSON.parse(jsonText);
+                } catch {
+                    throw new Error(
+                        "Gemini returned malformed JSON. Please try again."
+                    );
+                }
+            }
+        }
+    }
+
+    throw new Error(
+        "Gemini returned incomplete JSON. Please try the review again."
+    );
 }
+
 
 function calculateScore(issues, categories = null) {
     const relevantIssues = categories
