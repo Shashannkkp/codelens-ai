@@ -74,7 +74,11 @@ function parseGeminiJson(text) {
 
                 try {
                     return JSON.parse(jsonText);
-                } catch {
+                } catch (error) {
+                    console.error(
+                        "Gemini JSON parsing failed:",
+                        error.message
+                    );
                     throw new Error(
                         "Gemini returned malformed JSON. Please try again."
                     );
@@ -205,12 +209,12 @@ Do not report vulnerabilities without sufficient evidence.
 
 - Inspect console.log(), console.debug(), print(),
   System.out.println(), and equivalent statements for this language.
-- Flag unnecessary temporary debugging output.
-- Flag logging that exposes secrets or sensitive information.
-- Recommend removing temporary debugging output or using a
-  configurable logger when appropriate.
-- Do not automatically flag every legitimate production log.
-- Preserve useful application logging.
+- Flag unnecessary temporary debugging output and logging that exposes secrets or sensitive information.
+- When a debug statement is clearly temporary or unnecessary, remove it from improvedCode and ensure the corresponding issue is resolved.
+- Do not remove logging that is required for application functionality, auditing, monitoring, or error diagnosis.
+- Preserve useful production logging.
+- If it is unclear whether a log is necessary, preserve it and explain the uncertainty in suggestions.
+- After modifying logging, verify that the surrounding code still works and that return values, calculations, and business logic remain unchanged.
 
 4. PERFORMANCE
 
@@ -447,10 +451,11 @@ SOURCE CODE END
         !result ||
         !Array.isArray(result.issues) ||
         !Array.isArray(result.suggestions) ||
-        typeof result.improvedCode !== "string"
+        typeof result.improvedCode !== "string" ||
+        !result.improvedCode.trim()
     ) {
         throw new Error(
-            "Gemini returned an unexpected review format. Please try again."
+            "Gemini returned an unexpected review format or empty improved code. Please try again."
         );
     }
 

@@ -66,7 +66,8 @@ function combineIssues(aiIssues = [], ruleIssues = []) {
         String(value ?? "")
             .trim()
             .toLowerCase()
-            .replace(/\s+/g, " ");
+            .replace(/[^a-z0-9]+/g, " ")
+            .trim();
 
     for (const issue of [...aiIssues, ...ruleIssues]) {
         if (!issue || typeof issue !== "object") {
@@ -77,21 +78,29 @@ function combineIssues(aiIssues = [], ruleIssues = []) {
         const title = normalize(issue.title);
         const lineNumber = Number(issue.lineNumber);
 
-        // Keep findings with incomplete identities instead of deduplicating them.
-        const key =
+        const code = normalize(
+            issue.matchedCode || issue.code
+        );
+
+        // Use the affected line and issue description to identify
+        // findings that may describe the same underlying problem.
+        const identity =
             category &&
-            title &&
             Number.isInteger(lineNumber) &&
             lineNumber >= 0
-                ? [category, lineNumber, title].join("|")
+                ? [
+                    category,
+                    lineNumber,
+                    code || title
+                ].join("|")
                 : null;
 
-        if (key && seen.has(key)) {
+        if (identity && seen.has(identity)) {
             continue;
         }
 
-        if (key) {
-            seen.add(key);
+        if (identity) {
+            seen.add(identity);
         }
 
         combined.push(issue);
