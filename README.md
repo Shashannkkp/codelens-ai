@@ -1,173 +1,168 @@
 # CodeLens AI
 
-CodeLens AI is a browser-based code review workspace. It combines an AI-assisted review with local rule-based checks, helping developers spot potential security, performance, and code-quality issues. You can write or paste code in the editor, or import a supported source file from a public GitHub repository.
+> An AI-powered code review workspace for identifying security vulnerabilities, performance issues, and code-quality problems.
 
-> This repository contains a software project, not a personal resume or portfolio. No resume PDF, personal contact details, live demo, or repository-specific URL is currently included.
+CodeLens AI is a browser-based code review application built with React and Node.js. It combines Google's Gemini API with local rule-based checks to analyze source code, highlight potential issues, suggest improvements, and generate improved code. Developers can write or paste code directly into the editor or import supported source files from public GitHub repositories.
 
-## Table of Contents
+## Showcase
 
-- [About the Project](#about-the-project)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [API](#api)
-- [Screenshots](#screenshots)
-- [Contributing](#contributing)
-- [Contact](#contact)
-- [License](#license)
+<!-- Replace these placeholders with screenshots from the running app. -->
 
-## About the Project
+### Main workspace
 
-CodeLens AI provides a focused workspace for reviewing source code. The React frontend includes a code editor, a GitHub repository explorer, and a results panel. The Node.js/Express backend combines findings from local analysis rules with a Gemini-powered review and returns issue details and category scores.
+![CodeLens AI main workspace screenshot](screenshots/UI.png)
 
-The project is intended as a development aid. Review results are suggestions and should be checked by a developer before changing or relying on code.
+<!-- Add a screenshot showing the editor, GitHub explorer, and review panels. -->
 
-## Features
+### Code review results
 
-- **AI-assisted code review:** Uses the Google Gemini API to generate review findings.
-- **Rule-based checks:** Supplements AI results with 15 local checks, including checks for hardcoded credentials, SQL injection patterns, insecure HTTP, empty catch blocks, and input validation.
-- **Issue summaries and scores:** Presents findings with severity and code-quality, security, and performance scores.
-- **GitHub file import:** Loads source files from public GitHub repositories for review.
-- **Editable workspace:** Review imported code or enter code directly in the editor.
-- **Supported editor languages:** Java, JavaScript, and Python.
-- **Responsive three-panel interface:** Brings repository browsing, editing, and review output together.
+![CodeLens AI code review screenshot](screenshots/review.png)
 
-GitHub import currently supports public repositories and selected source formats, including Java, JavaScript/TypeScript, Python, HTML, CSS, SQL, Go, C/C++, C#, PHP, Ruby, shell scripts, and JSON. The backend limits imported files to 1 MB and lists up to 500 supported files per repository.
+<!-- Add a screenshot showing review findings, severity levels, and suggested improvements. -->
 
-## Technology Stack
+## Highlights
 
-| Area | Technologies |
+- **AI-powered code reviews** using Google's Gemini API.
+- **Rule-based analysis** to identify common security, performance, and code-quality issues.
+- **Severity-based findings** with issue categories, descriptions, and actionable suggestions.
+- **Improved code generation** with an emphasis on preserving the original program logic.
+- **GitHub integration** to browse public repositories and import supported source files.
+- **Interactive code editor** for writing, pasting, and reviewing source code.
+- **REST API backend** with separated frontend and server-side AI integration.
+- **Request handling and error management** for GitHub requests and code-review operations.
+
+## Tech Stack
+
+| Layer | Tools |
 | --- | --- |
-| Frontend | React 19, Vite, Tailwind CSS, Lucide React |
-| Main backend | Node.js, Express 5 |
-| AI review | Google Gemini API via `@google/genai` |
-| Repository access | GitHub REST API |
-| Alternative backend | Java 25, Spring Boot 4 |
+| Frontend | React, Vite |
+| Styling | Tailwind CSS |
+| Icons | Lucide React |
+| Backend | Node.js, Express |
+| AI | Google Gemini via `@google/genai` |
+| Repository integration | GitHub API |
+| API communication | REST APIs, JSON, Fetch API |
+| Development tools | Git, GitHub, ESLint |
 
 ## Project Structure
 
 ```text
-.
-├── backend/          # Express API, GitHub integration, and review services
-├── backend-spring/   # Separate Spring Boot rule-based review backend
-└── frontend/         # React and Vite application
+codelens-ai/
+├── backend/
+│   ├── server.js              # Express API and backend routes
+│   ├── package.json           # Backend dependencies and scripts
+│   └── .env                   # API keys and environment variables
+├── screenshots/
+│   ├── UI1.png                # Main workspace screenshot
+│   └── UI2.png                # Code review results screenshot
+├── src/
+│   ├── components/            # Workspace and UI components
+│   ├── hooks/                 # Reusable React hooks
+│   ├── services/              # API and code-review services
+│   ├── App.jsx                # Main application component
+│   └── ...                    # Other application files
+├── index.html
+├── package.json
+├── vite.config.js
+└── README.md
 ```
 
-The frontend is configured to call the Express backend at `http://localhost:8080`. The Spring Boot project is separate and does not provide the GitHub repository endpoints or Gemini integration used by the full application.
-
-## Getting Started
+## Setup
 
 ### Prerequisites
 
-- Node.js (current LTS recommended) and npm
-- A Google Gemini API key for AI-assisted reviews
-- Git
+- Node.js and npm
+- A Google Gemini API key
+- Git (optional, for cloning the repository)
 
-### Clone the repository
-
-Replace the URL below with the clone URL for your GitHub repository:
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/<your-account>/<your-repository>.git
-cd <your-repository>
+git clone https://github.com/Shashannkkp/codelens-ai.git
+cd codelens-ai
 ```
 
-### Install dependencies
+### 2. Install dependencies
 
-From the repository root, install dependencies separately for the frontend and Express backend:
+From the project root:
 
 ```bash
+npm install
 cd backend
 npm install
-cd ../frontend
-npm install
 ```
 
-### Configure and run the backend
+### 3. Configure environment variables
 
-Create `backend/.env` and add your Gemini API key:
+Create a `.env` file inside the `backend/` directory:
 
-```dotenv
-GEMINI_API_KEY=your_gemini_api_key
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+GITHUB_TOKEN=your_github_token_here
 PORT=8080
 ```
 
-Then start the API:
+`GITHUB_TOKEN` is used for authenticated GitHub API requests when configured. Keep your API keys private and never commit your `.env` file to source control.
+
+### 4. Start the backend
+
+Open a terminal:
 
 ```bash
-# Run this from the repository root in its own terminal.
 cd backend
-npm start
-```
-
-For development with automatic restarts, use `npm run dev` instead.
-
-### Run the frontend
-
-In a second terminal:
-
-```bash
-# Run this from the repository root.
-cd frontend
 npm run dev
 ```
 
-Open the local URL printed by Vite (typically `http://localhost:5173`). Keep the backend running at `http://localhost:8080` while using the app.
+The API runs at `http://localhost:8080` by default.
 
-## Configuration
+### 5. Start the frontend
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `GEMINI_API_KEY` | Yes for AI reviews | API key used by the Gemini review service. |
-| `PORT` | No | Express server port; defaults to `8080`. |
-| `GITHUB_TOKEN` | No | Optional GitHub token for repository API requests, useful when unauthenticated rate limits are reached. |
+Open a second terminal from the project root:
 
-Keep API keys in `backend/.env`; do not commit that file or expose secrets in frontend code. The GitHub integration can make unauthenticated requests when `GITHUB_TOKEN` is not set, subject to GitHub's rate limits.
+```bash
+npm run dev
+```
 
-## Usage
-
-1. Start the backend and frontend as described above.
-2. In the app, either enter code in the editor or provide the URL of a public GitHub repository and import a supported file.
-3. Choose Java, JavaScript, or Python in the editor when reviewing code directly.
-4. Run the review and inspect the findings, severity levels, recommendations, and category scores.
-5. Treat findings as prompts for further investigation; automated analysis can produce false positives or miss issues.
+Open the local URL shown by Vite, usually `http://localhost:5173`.
 
 ## API
 
-The Express backend exposes these endpoints:
+### `GET /`
 
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `GET` | `/` | Health check. |
-| `POST` | `/api/review` | Reviews submitted source code. Expects JSON containing `code` and an optional `language`. |
-| `POST` | `/api/github/repository` | Lists supported source files in a public GitHub repository. Expects JSON containing `repoUrl`. |
-| `POST` | `/api/github/file` | Imports a selected source file. Expects `repoUrl`, `path`, and `branch`. |
+Returns a basic backend health response.
 
-## Screenshots
+### `POST /api/review`
 
-No application screenshot is currently included in the repository. Add a captured UI image under `frontend/src/assets/` (or another documented image folder) and embed it here when one is available, for example:
+Analyzes submitted source code using the code-review backend.
 
-```markdown
-![CodeLens AI workspace](frontend/src/assets/codelens-workspace.png)
-```
+The request includes the source code and language. The response contains review information such as a summary, issues, suggestions, and improved code.
 
-## Contributing
+### `POST /api/github/repository`
 
-Contributions are welcome. To propose a change:
+Loads repository information and the supported source files from a GitHub repository.
 
-1. Fork the repository and create a focused branch.
-2. Make the change and verify the relevant frontend build or backend behavior.
-3. Open a pull request describing the motivation, implementation, and any manual or automated checks performed.
+### `POST /api/github/file`
 
-Please do not include API keys, personal credentials, or other secrets in commits. The frontend provides `npm run lint` and `npm run build` scripts.
+Retrieves the contents of a selected file from a GitHub repository.
 
-## Contact
+## Available Scripts
 
-No personal or maintainer contact details are configured in this repository. For project questions or bug reports, open an issue in the GitHub repository where you found this README.
+Run these from the project root:
 
-## License
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the Vite development server |
+| `npm run build` | Create a production frontend build |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run ESLint |
 
-There is no repository-wide `LICENSE` file at this time. The backend package metadata declares ISC for that package, but this does not establish a license for the complete repository. Please contact the repository maintainer before reusing or redistributing the project, and add a root license file once the intended license is confirmed.
+Run `npm run dev` inside `backend/` to start the API server, provided the backend development script is configured in `backend/package.json`.
+
+## Notes
+
+- Gemini API requests are handled by the backend so the API key does not need to be exposed in frontend code.
+- CodeLens AI combines local rule-based checks with AI-generated review feedback.
+- GitHub integration supports importing supported source files from repositories.
+- Repository access, API quotas, and Gemini availability may affect requests.
+- The `screenshots/` directory contains the images displayed in this README. Ensure both screenshot files exist before pushing your changes.
+- Never commit API keys or other secrets to GitHub.

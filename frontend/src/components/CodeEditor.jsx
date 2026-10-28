@@ -1,4 +1,3 @@
-
 import EditorToolbar from "./EditorToolbar";
 import EditorFileTab from "./EditorFileTab";
 
@@ -16,7 +15,7 @@ function CodeEditor({
   const lineHeight = 24;
 
   return (
-    <div className="h-full min-h-0 flex flex-col overflow-hidden bg-slate-950 rounded">
+    <div className="h-full min-h-0 flex flex-col overflow-hidden border border-white/80 bg-gradient-to-br from-sky-100 via-sky-200/70 to-sky-100 shadow-lg shadow-sky-200/40">
       {/* Editor toolbar */}
       <EditorToolbar
         language={language}
@@ -31,10 +30,10 @@ function CodeEditor({
       <EditorFileTab language={language} />
 
       {/* Code editing area */}
-      <div className="flex-1 min-h-0 flex overflow-hidden bg-slate-950">
+      <div className="flex-1 min-h-0 flex overflow-hidden bg-sky-100">
         {/* Line numbers */}
         <div
-          className="shrink-0 w-12 overflow-hidden pt-4 pr-3 text-right font-mono text-xs text-slate-600 select-none"
+          className="shrink-0 w-12 overflow-hidden border-r border-sky-200 bg-sky-200/50 pt-4 pr-3 text-right font-mono text-xs text-slate-600 select-none"
           aria-hidden="true"
         >
           {lines.map((_, index) => (
@@ -78,12 +77,12 @@ function CodeEditor({
           autoCorrect="off"
           aria-label="Source code editor"
           placeholder="// Paste or write your code here"
-          className="flex-1 min-w-0 h-full resize-none overflow-auto bg-transparent px-4 pt-4 pb-6 font-mono text-[13px] leading-6 text-slate-300 placeholder:text-slate-700 outline-none"
+          className="flex-1 min-w-0 h-full resize-none overflow-auto bg-sky-100 px-4 pt-4 pb-6 font-mono text-[13px] leading-6 text-slate-800 placeholder:text-sky-700/60 outline-none selection:bg-sky-300/60 focus:ring-1 focus:ring-inset focus:ring-sky-400/40 [scrollbar-color:transparent_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-corner]:bg-transparent"
         />
       </div>
 
       {/* Editor status bar */}
-      <div className="shrink-0 h-8 px-3 flex items-center justify-between gap-3 bg-slate-900 text-[11px] text-slate-500">
+      <div className="shrink-0 flex h-8 items-center justify-between gap-3 border-t border-sky-200 bg-sky-200/60 px-3 text-[11px] text-slate-700">
         <div className="flex items-center gap-3">
           <span>{language}</span>
           <span>Ln {lineCount}</span>

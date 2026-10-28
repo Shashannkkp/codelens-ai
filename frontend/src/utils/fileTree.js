@@ -1,6 +1,17 @@
 
 export function getLanguageFromPath(path = "") {
-  const extension = path.split(".").pop()?.toLowerCase();
+  if (typeof path !== "string" || !path.trim()) {
+    return "Unknown";
+  }
+
+  const fileName = path.split("/").pop() || "";
+  const dotIndex = fileName.lastIndexOf(".");
+
+  if (dotIndex <= 0 || dotIndex === fileName.length - 1) {
+    return "Unknown";
+  }
+
+  const extension = fileName.slice(dotIndex + 1).toLowerCase();
 
   if (extension === "java") return "Java";
 
@@ -10,27 +21,54 @@ export function getLanguageFromPath(path = "") {
 
   if (extension === "py") return "Python";
 
-  return "Java";
+  return "Unknown";
 }
 
 export function buildFileTree(files = []) {
   const root = [];
 
+  if (!Array.isArray(files)) {
+    return root;
+  }
+
   for (const file of files) {
-    const parts = file.path.split("/").filter(Boolean);
+    if (
+      !file ||
+      typeof file.path !== "string" ||
+      !file.path.trim()
+    ) {
+      continue;
+    }
+
+    const parts = file.path
+      .split("/")
+      .filter(Boolean);
+
+    // Ignore malformed paths containing traversal segments.
+    if (
+      parts.length === 0 ||
+      parts.some((part) => part === "." || part === "..")
+    ) {
+      continue;
+    }
+
     let current = root;
 
-    parts.forEach((part, index) => {
+    for (let index = 0; index < parts.length; index++) {
+      const part = parts[index];
       const isFile = index === parts.length - 1;
+      const nodePath = parts.slice(0, index + 1).join("/");
 
       let node = current.find(
-        (item) => item.name === part && item.isFile === isFile
+        (item) =>
+          item.name === part &&
+          item.isFile === isFile
       );
 
       if (!node) {
         node = {
           name: part,
-          path: parts.slice(0, index + 1).join("/"),
+          path: nodePath,
           isFile,
           children: [],
         };
@@ -41,7 +79,7 @@ export function buildFileTree(files = []) {
       if (!isFile) {
         current = node.children;
       }
-    });
+    }
   }
 
   function sortTree(nodes) {
@@ -53,11 +91,11 @@ export function buildFileTree(files = []) {
       return a.name.localeCompare(b.name);
     });
 
-    nodes.forEach((node) => {
+    for (const node of nodes) {
       if (!node.isFile) {
         sortTree(node.children);
       }
-    });
+    }
   }
 
   sortTree(root);

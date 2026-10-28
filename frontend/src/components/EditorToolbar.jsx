@@ -1,5 +1,3 @@
-
-
 import { Play, Trash2 } from "lucide-react";
 
 export default function EditorToolbar({
@@ -11,14 +9,12 @@ export default function EditorToolbar({
   clearCode,
 }) {
   return (
-    <div className="shrink-0 h-12 px-4 flex items-center justify-between gap-3 bg-slate-900">
+    <div className="shrink-0 flex h-12 items-center justify-between gap-3 border-b border-sky-200 bg-gradient-to-r from-sky-200/80 via-sky-100 to-sky-200/60 px-4">
       {/* Language selector */}
-
-      
       <div className="flex items-center gap-2">
         <label
           htmlFor="code-language"
-          className="text-xs text-white hover:text-red-500"
+          className="text-xs font-medium text-slate-700"
         >
           Code
         </label>
@@ -28,7 +24,7 @@ export default function EditorToolbar({
           value={language}
           onChange={(event) => setLanguage(event.target.value)}
           disabled={loading}
-          className="bg-slate-950 rounded px-2 py-1.5 text-xs text-slate-300 outline-none focus:border-slate-500 hover:text-green-500"
+          className="rounded-lg border border-sky-200 bg-white/70 px-3 py-1.5 text-xs text-slate-800 shadow-sm outline-none transition hover:bg-white focus:border-sky-400 focus:ring-2 focus:ring-sky-300/50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <option value="Java">Java</option>
           <option value="JavaScript">JavaScript</option>
@@ -42,9 +38,9 @@ export default function EditorToolbar({
           type="button"
           onClick={clearCode}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-3 py-2 text-xs text-white hover:text-red-600 rounded transition disabled:opacity-40 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 rounded-lg border border-sky-200 bg-white/50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-sky-300 hover:bg-sky-100 hover:text-sky-800 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          <Trash2 size={14} />
+          <Trash2 size={14} className="text-sky-600" />
           Clear
         </button>
 
@@ -52,7 +48,7 @@ export default function EditorToolbar({
           type="button"
           onClick={reviewCode}
           disabled={loading || !code.trim()}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-blue-400 text-white rounded text-xs font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-sky-400 bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-sky-300/40 transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Play size={13} fill="currentColor" />
           {loading ? "Analyzing..." : "Review Code"}

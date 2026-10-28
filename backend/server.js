@@ -62,23 +62,53 @@ function combineIssues(aiIssues = [], ruleIssues = []) {
     const combined = [];
     const seen = new Set();
 
-    for (const issue of [...aiIssues, ...ruleIssues]) {
-        const key = [
-            issue.category,
-            issue.lineNumber,
-            issue.title
-        ]
-            .map((value) => String(value || "").trim().toLowerCase())
-            .join("|");
+    const normalize = (value) =>
+        String(value ?? "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, " ")
+            .trim();
 
-        if (!seen.has(key)) {
-            seen.add(key);
-            combined.push(issue);
+    for (const issue of [...aiIssues, ...ruleIssues]) {
+        if (!issue || typeof issue !== "object") {
+            continue;
         }
+
+        const category = normalize(issue.category);
+        const title = normalize(issue.title);
+        const lineNumber = Number(issue.lineNumber);
+
+        const code = normalize(
+            issue.matchedCode || issue.code
+        );
+
+        // Use the affected line and issue description to identify
+        // findings that may describe the same underlying problem.
+        const identity =
+            category &&
+            Number.isInteger(lineNumber) &&
+            lineNumber >= 0
+                ? [
+                    category,
+                    lineNumber,
+                    code || title
+                ].join("|")
+                : null;
+
+        if (identity && seen.has(identity)) {
+            continue;
+        }
+
+        if (identity) {
+            seen.add(identity);
+        }
+
+        combined.push(issue);
     }
 
     return combined;
 }
+
 
 // Gemini-powered code review
 app.post("/api/review", async (req, res) => {
